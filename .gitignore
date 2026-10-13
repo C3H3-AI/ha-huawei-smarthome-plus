@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.hacsversion
+.idea/
+.vscode/

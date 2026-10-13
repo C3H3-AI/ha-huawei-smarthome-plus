@@ -1,0 +1,12 @@
+{
+  "domain": "huawei_smarthome_plus",
+  "name": "Huawei SmartHome Plus",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://github.com/C3H3-AI/ha-huawei-smarthome-plus",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "dependencies": ["huawei_smarthome"],
+  "requirements": [],
+  "version": "0.1.0"
+}

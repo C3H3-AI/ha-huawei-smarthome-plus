@@ -1,0 +1,356 @@
+list_scenes:
+  name: 列出场景
+  description: 列出华为智慧生活账号下的全部场景
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    need_check:
+      name: 校验模式
+      required: false
+      selector: {boolean: {}}
+
+create_scene:
+  name: 创建场景
+  description: 创建一个新的智慧生活场景
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    title:
+      name: 场景名称
+      required: true
+      selector: {text: {}}
+    type:
+      name: 场景类型
+      required: false
+      description: 1=手动，3=自动（设备/定时触发），0=混合；默认 1
+      selector:
+        select:
+          options:
+            - {label: "手动 (1)", value: "1"}
+            - {label: "自动 (3)", value: "3"}
+            - {label: "混合 (0)", value: "0"}
+    home_id:
+      name: 家庭 ID
+      required: false
+      selector: {text: {}}
+    description:
+      name: 描述
+      required: false
+      selector: {text: {}}
+    enabled:
+      name: 创建后启用
+      required: false
+      selector: {boolean: {}}
+    flow:
+      name: 流程定义 (flow)
+      required: false
+      description: 完整 ScenarioInfo JSON（触发器/动作），单条可传对象；留空则为仅「点击卡片」手动触发
+      selector: {object: {}}
+    card:
+      name: 卡片附加字段
+      required: false
+      description: 合并进 scenarioCard 的额外字段（如 logo、roomId）
+      selector: {object: {}}
+
+update_scene:
+  name: 修改场景
+  description: 修改场景名称/描述/开关/流程（与 App 编辑保存同接口，先合并再整体回传）
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    scenario_id:
+      name: 场景 ID
+      required: true
+      description: 从 list_scenes 返回值里取
+      selector: {text: {}}
+    title:
+      name: 场景名称
+      required: false
+      selector: {text: {}}
+    type:
+      name: 场景类型
+      required: false
+      description: 1=手动，3=自动，0=混合
+      selector:
+        select:
+          options:
+            - {label: "手动 (1)", value: "1"}
+            - {label: "自动 (3)", value: "3"}
+            - {label: "混合 (0)", value: "0"}
+    description:
+      name: 描述
+      required: false
+      selector: {text: {}}
+    enabled:
+      name: 是否启用
+      required: false
+      selector: {boolean: {}}
+    flow:
+      name: 流程定义 (flow)
+      required: false
+      description: 完整 ScenarioInfo JSON，传入则整体替换原触发器/动作
+      selector: {object: {}}
+    card:
+      name: 卡片附加字段
+      required: false
+      selector: {object: {}}
+
+delete_scene:
+  name: 删除场景
+  description: 永久删除一个场景（不可恢复）
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    scenario_id:
+      name: 场景 ID
+      required: true
+      description: 从 list_scenes 返回值里取
+      selector: {text: {}}
+
+scene_move_room:
+  name: 移动到房间
+  description: 把场景移动到指定家庭下的房间
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    scenario_id:
+      name: 场景 ID
+      required: true
+      selector: {text: {}}
+    room_id:
+      name: 房间 ID
+      required: true
+      description: 目标房间 ID；「全部」为 -999999
+      selector: {text: {}}
+    home_id:
+      name: 家庭 ID
+      required: false
+      description: 留空则自动取场景当前所属家庭
+      selector: {text: {}}
+
+scene_detail:
+  name: 场景详情
+  description: 获取场景的触发器/条件/动作全量详情
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    scenario_id:
+      name: 场景 ID
+      required: true
+      description: 从 list_scenes 返回值里取
+      selector: {text: {}}
+
+run_scene:
+  name: 立即执行场景
+  description: 立即执行一次场景
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    scenario_id:
+      name: 场景 ID
+      required: true
+      description: 从 list_scenes 返回值里取
+      selector: {text: {}}
+
+scene_set_enabled:
+  name: 启用/禁用场景
+  description: 启用或禁用某个场景（手动场景不支持，服务端拒绝）
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    scenario_id:
+      name: 场景 ID
+      required: true
+      selector: {text: {}}
+    enabled:
+      name: 是否启用
+      required: true
+      description: true 启用 / false 禁用
+      selector: {boolean: {}}
+
+scene_rename:
+  name: 重命名场景
+  description: 重命名场景标题
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    scenario_id:
+      name: 场景 ID
+      required: true
+      selector: {text: {}}
+    title:
+      name: 新标题
+      required: true
+      description: 场景的新名称
+      selector: {text: {}}
+
+scene_logs:
+  name: 场景执行日志
+  description: 分页查询场景执行日志
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    cursor:
+      name: 分页游标
+      required: false
+      description: 上次返回的游标，首页留空
+      selector: {text: {}}
+    page_size:
+      name: 每页条数
+      required: false
+      description: 默认 20
+      selector: {number: {min: 1, max: 100}}
+    start_time:
+      name: 开始时间
+      required: false
+      description: 格式 YYYY-MM-DDTHH:MM:SSZ
+      selector: {text: {}}
+    end_time:
+      name: 结束时间
+      required: false
+      description: 格式 YYYY-MM-DDTHH:MM:SSZ
+      selector: {text: {}}
+
+scenes_by_device:
+  name: 按设备查场景
+  description: 按设备 deviceId 查询关联场景
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    device_id:
+      name: 设备 ID
+      required: true
+      description: 华为 IoT 设备 ID
+      selector: {text: {}}
+
+create_room:
+  name: 新建房间
+  description: 在家庭下新建一个房间
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    name:
+      name: 房间名
+      required: true
+      selector: {text: {}}
+    home_id:
+      name: 家庭 ID
+      required: false
+      description: 留空则取账号首个家庭
+      selector: {text: {}}
+    description:
+      name: 描述
+      required: false
+      selector: {text: {}}
+
+update_room:
+  name: 改房间名
+  description: 重命名房间
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    room_id:
+      name: 房间 ID
+      required: true
+      selector: {text: {}}
+    name:
+      name: 新房间名
+      required: true
+      description: 最长 100 字符
+      selector: {text: {}}
+    home_id:
+      name: 家庭 ID
+      required: false
+      selector: {text: {}}
+    description:
+      name: 描述
+      required: false
+      selector: {text: {}}
+
+delete_room:
+  name: 删除房间
+  description: 删除一个房间（房内有设备时服务端拒绝）
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    room_id:
+      name: 房间 ID
+      required: true
+      selector: {text: {}}
+    home_id:
+      name: 家庭 ID
+      required: false
+      selector: {text: {}}
+
+transfer_devices:
+  name: 移动设备到房间
+  description: 把若干设备移动到指定房间
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    device_ids:
+      name: 设备 ID 列表
+      required: true
+      description: 华为 deviceId 列表
+      selector: {text: {}}
+    room_id:
+      name: 目标房间 ID
+      required: true
+      selector: {text: {}}
+    home_id:
+      name: 家庭 ID
+      required: false
+      selector: {text: {}}
+
+rename_device:
+  name: 设备改名
+  description: 修改设备别名（别名不含连字符）
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    dev_id:
+      name: 设备 ID
+      required: true
+      selector: {text: {}}
+    alias:
+      name: 新名称
+      required: false
+      description: 留空则清除别名
+      selector: {text: {}}
+    home_id:
+      name: 家庭 ID
+      required: false
+      description: 可选，作为 X-HomeId 请求头
+      selector: {text: {}}
