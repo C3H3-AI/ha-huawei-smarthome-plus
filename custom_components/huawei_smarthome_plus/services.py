@@ -1,13 +1,13 @@
 """Huawei SmartHome Plus 服务。
 
-16 个服务，分两组：
+20 个服务，分两组：
 - 场景（Home Automation）11 个：list/create/update/delete/move_room/detail/
   run/enable/rename/logs/by_device
-- 房间 / 设备管理 5 个：create_room/update_room/delete_room/
-  transfer_devices/rename_device
+- 房间 / 设备管理 9 个：create_room/update_room/delete_room/list_rooms/
+  list_devices/transfer_devices/rename_device/delete_device/set_room_floors
 
 凭证复用原集成 ``huawei_smarthome`` 已登录账号（``runtime_data.async_get_session()``），
-Plus 自身不存储任何凭据。端点来源与验证状态见 README。
+Plus 自身不存储任何凭据。服务清单与验证状态见 README。
 """
 
 from __future__ import annotations
@@ -41,8 +41,12 @@ SERVICE_SCENES_BY_DEVICE = "scenes_by_device"
 SERVICE_CREATE_ROOM = "create_room"
 SERVICE_UPDATE_ROOM = "update_room"
 SERVICE_DELETE_ROOM = "delete_room"
+SERVICE_LIST_ROOMS = "list_rooms"
+SERVICE_LIST_DEVICES = "list_devices"
 SERVICE_TRANSFER_DEVICES = "transfer_devices"
 SERVICE_RENAME_DEVICE = "rename_device"
+SERVICE_DELETE_DEVICE = "delete_device"
+SERVICE_SET_ROOM_FLOORS = "set_room_floors"
 
 SCENE_SERVICES = (
     SERVICE_LIST_SCENES,
@@ -62,8 +66,12 @@ ALL_SERVICES = SCENE_SERVICES + (
     SERVICE_CREATE_ROOM,
     SERVICE_UPDATE_ROOM,
     SERVICE_DELETE_ROOM,
+    SERVICE_LIST_ROOMS,
+    SERVICE_LIST_DEVICES,
     SERVICE_TRANSFER_DEVICES,
     SERVICE_RENAME_DEVICE,
+    SERVICE_DELETE_DEVICE,
+    SERVICE_SET_ROOM_FLOORS,
 )
 
 
@@ -349,6 +357,60 @@ async def async_register_services(hass: "HomeAssistant") -> None:
 
         return await _call_plus(call, SERVICE_RENAME_DEVICE, invoke)
 
+    async def _set_room_floors(call: "ServiceCall") -> "ServiceResponse":
+        rooms = call.data["rooms"]
+        room_floors = [
+            {"room_id": str(item["room_id"]), "floor": item["floor"]}
+            for item in rooms
+        ]
+
+        async def invoke(api: Any, session: Any) -> Any:
+            return await api.async_set_room_floors(
+                session,
+                room_floors,
+                home_id=call.data.get("home_id"),
+                merge=bool(call.data.get("merge", True)),
+            )
+
+        return await _call_plus(call, SERVICE_SET_ROOM_FLOORS, invoke)
+
+    async def _list_rooms(call: "ServiceCall") -> "ServiceResponse":
+        """列出家庭下房间（含楼层、设备数）。"""
+
+        async def invoke(api: Any, session: Any) -> Any:
+            return await api.async_list_rooms(
+                session, home_id=call.data.get("home_id")
+            )
+
+        return await _call_plus(call, SERVICE_LIST_ROOMS, invoke)
+
+    async def _list_devices(call: "ServiceCall") -> "ServiceResponse":
+        """列出家庭下设备（含 devId、型号、所属房间、在线状态）。"""
+
+        async def invoke(api: Any, session: Any) -> Any:
+            return await api.async_list_devices(
+                session, home_id=call.data.get("home_id")
+            )
+
+        return await _call_plus(call, SERVICE_LIST_DEVICES, invoke)
+
+    async def _delete_device(call: "ServiceCall") -> "ServiceResponse":
+        """解绑（删除）设备，不可恢复。"""
+
+        dev_id = call.data["dev_id"]
+        _LOGGER.warning("收到 delete_device 服务调用：将解绑设备 %s", dev_id)
+
+        async def invoke(api: Any, session: Any) -> Any:
+            associate = call.data.get("associate")
+            return await api.async_delete_device(
+                session,
+                dev_id,
+                home_id=call.data.get("home_id"),
+                associate=int(associate) if associate is not None else None,
+            )
+
+        return await _call_plus(call, SERVICE_DELETE_DEVICE, invoke)
+
     entry_field = {vol.Optional("entry_id"): str}
     scenario_id_field = {vol.Required("scenario_id"): str}
 
@@ -472,6 +534,22 @@ async def async_register_services(hass: "HomeAssistant") -> None:
             },
         ),
         (
+            SERVICE_LIST_ROOMS,
+            _list_rooms,
+            {
+                **entry_field,
+                vol.Optional("home_id"): str,
+            },
+        ),
+        (
+            SERVICE_LIST_DEVICES,
+            _list_devices,
+            {
+                **entry_field,
+                vol.Optional("home_id"): str,
+            },
+        ),
+        (
             SERVICE_TRANSFER_DEVICES,
             _transfer_devices,
             {
@@ -489,6 +567,33 @@ async def async_register_services(hass: "HomeAssistant") -> None:
                 vol.Required("dev_id"): str,
                 vol.Optional("alias", default=""): str,
                 vol.Optional("home_id"): str,
+            },
+        ),
+        (
+            SERVICE_DELETE_DEVICE,
+            _delete_device,
+            {
+                **entry_field,
+                vol.Required("dev_id"): str,
+                vol.Optional("home_id"): str,
+                vol.Optional("associate"): vol.All(
+                    vol.Coerce(int), vol.In((0, 1))
+                ),
+            },
+        ),
+        (
+            SERVICE_SET_ROOM_FLOORS,
+            _set_room_floors,
+            {
+                **entry_field,
+                vol.Required("rooms"): [
+                    {
+                        vol.Required("room_id"): vol.Any(str, int),
+                        vol.Required("floor"): str,
+                    }
+                ],
+                vol.Optional("home_id"): str,
+                vol.Optional("merge", default=True): bool,
             },
         ),
     )

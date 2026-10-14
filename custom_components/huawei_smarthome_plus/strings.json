@@ -19,157 +19,412 @@
       "name": "列出场景",
       "description": "列出华为智慧生活账号下的全部场景",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "need_check": { "name": "校验模式", "description": "" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "need_check": {
+          "name": "校验模式",
+          "description": ""
+        }
       }
     },
     "create_scene": {
       "name": "创建场景",
       "description": "创建一个新的智慧生活场景",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "title": { "name": "场景名称", "description": "" },
-        "type": { "name": "场景类型", "description": "1=手动，3=自动，0=混合；默认 1" },
-        "home_id": { "name": "家庭 ID", "description": "" },
-        "description": { "name": "描述", "description": "" },
-        "enabled": { "name": "创建后启用", "description": "" },
-        "flow": { "name": "流程定义 (flow)", "description": "完整 ScenarioInfo JSON（触发器/动作），单条可传对象；留空则为仅「点击卡片」手动触发" },
-        "card": { "name": "卡片附加字段", "description": "合并进 scenarioCard 的额外字段（如 logo、roomId）" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "title": {
+          "name": "场景名称",
+          "description": ""
+        },
+        "type": {
+          "name": "场景类型",
+          "description": "1=手动，3=自动，0=混合；默认 1"
+        },
+        "home_id": {
+          "name": "家庭 ID",
+          "description": ""
+        },
+        "description": {
+          "name": "描述",
+          "description": ""
+        },
+        "enabled": {
+          "name": "创建后启用",
+          "description": ""
+        },
+        "flow": {
+          "name": "流程定义 (flow)",
+          "description": "完整 ScenarioInfo JSON（触发器/动作），单条可传对象；留空则为仅「点击卡片」手动触发"
+        },
+        "card": {
+          "name": "卡片附加字段",
+          "description": "合并进 scenarioCard 的额外字段（如 logo、roomId）"
+        }
       }
     },
     "update_scene": {
       "name": "修改场景",
       "description": "修改场景名称/描述/开关/流程（与 App 编辑保存同接口，先合并再整体回传）",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "scenario_id": { "name": "场景 ID", "description": "从 list_scenes 返回值里取" },
-        "title": { "name": "场景名称", "description": "" },
-        "type": { "name": "场景类型", "description": "1=手动，3=自动，0=混合" },
-        "description": { "name": "描述", "description": "" },
-        "enabled": { "name": "是否启用", "description": "" },
-        "flow": { "name": "流程定义 (flow)", "description": "完整 ScenarioInfo JSON，传入则整体替换原触发器/动作" },
-        "card": { "name": "卡片附加字段", "description": "" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "scenario_id": {
+          "name": "场景 ID",
+          "description": "从 list_scenes 返回值里取"
+        },
+        "title": {
+          "name": "场景名称",
+          "description": ""
+        },
+        "type": {
+          "name": "场景类型",
+          "description": "1=手动，3=自动，0=混合"
+        },
+        "description": {
+          "name": "描述",
+          "description": ""
+        },
+        "enabled": {
+          "name": "是否启用",
+          "description": ""
+        },
+        "flow": {
+          "name": "流程定义 (flow)",
+          "description": "完整 ScenarioInfo JSON，传入则整体替换原触发器/动作"
+        },
+        "card": {
+          "name": "卡片附加字段",
+          "description": ""
+        }
       }
     },
     "delete_scene": {
       "name": "删除场景",
       "description": "永久删除一个场景（不可恢复）",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "scenario_id": { "name": "场景 ID", "description": "从 list_scenes 返回值里取" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "scenario_id": {
+          "name": "场景 ID",
+          "description": "从 list_scenes 返回值里取"
+        }
       }
     },
     "scene_move_room": {
       "name": "移动到房间",
       "description": "把场景移动到指定家庭下的房间",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "scenario_id": { "name": "场景 ID", "description": "" },
-        "room_id": { "name": "房间 ID", "description": "目标房间 ID；「全部」为 -999999" },
-        "home_id": { "name": "家庭 ID", "description": "留空则自动取场景当前所属家庭" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "scenario_id": {
+          "name": "场景 ID",
+          "description": ""
+        },
+        "room_id": {
+          "name": "房间 ID",
+          "description": "目标房间 ID；「全部」为 -999999"
+        },
+        "home_id": {
+          "name": "家庭 ID",
+          "description": "留空则自动取场景当前所属家庭"
+        }
       }
     },
     "scene_detail": {
       "name": "场景详情",
       "description": "获取场景的触发器/条件/动作全量详情",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "scenario_id": { "name": "场景 ID", "description": "从 list_scenes 返回值里取" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "scenario_id": {
+          "name": "场景 ID",
+          "description": "从 list_scenes 返回值里取"
+        }
       }
     },
     "run_scene": {
       "name": "立即执行场景",
       "description": "立即执行一次场景",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "scenario_id": { "name": "场景 ID", "description": "从 list_scenes 返回值里取" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "scenario_id": {
+          "name": "场景 ID",
+          "description": "从 list_scenes 返回值里取"
+        }
       }
     },
     "scene_set_enabled": {
       "name": "启用/禁用场景",
       "description": "启用或禁用某个场景（手动场景 type=1 不支持，服务端拒绝）",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "scenario_id": { "name": "场景 ID", "description": "" },
-        "enabled": { "name": "是否启用", "description": "true 启用 / false 禁用" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "scenario_id": {
+          "name": "场景 ID",
+          "description": ""
+        },
+        "enabled": {
+          "name": "是否启用",
+          "description": "true 启用 / false 禁用"
+        }
       }
     },
     "scene_rename": {
       "name": "重命名场景",
       "description": "重命名场景标题",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "scenario_id": { "name": "场景 ID", "description": "" },
-        "title": { "name": "新标题", "description": "场景的新名称" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "scenario_id": {
+          "name": "场景 ID",
+          "description": ""
+        },
+        "title": {
+          "name": "新标题",
+          "description": "场景的新名称"
+        }
       }
     },
     "scene_logs": {
       "name": "场景执行日志",
       "description": "分页查询场景执行日志",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "cursor": { "name": "分页游标", "description": "上次返回的游标，首页留空" },
-        "page_size": { "name": "每页条数", "description": "默认 20" },
-        "start_time": { "name": "开始时间", "description": "格式 YYYY-MM-DDTHH:MM:SSZ" },
-        "end_time": { "name": "结束时间", "description": "格式 YYYY-MM-DDTHH:MM:SSZ" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "cursor": {
+          "name": "分页游标",
+          "description": "上次返回的游标，首页留空"
+        },
+        "page_size": {
+          "name": "每页条数",
+          "description": "默认 20"
+        },
+        "start_time": {
+          "name": "开始时间",
+          "description": "格式 YYYY-MM-DDTHH:MM:SSZ"
+        },
+        "end_time": {
+          "name": "结束时间",
+          "description": "格式 YYYY-MM-DDTHH:MM:SSZ"
+        }
       }
     },
     "scenes_by_device": {
       "name": "按设备查场景",
       "description": "按设备 deviceId 查询关联场景",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "device_id": { "name": "设备 ID", "description": "华为 IoT 设备 ID" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "device_id": {
+          "name": "设备 ID",
+          "description": "华为 IoT 设备 ID"
+        }
       }
     },
     "create_room": {
       "name": "新建房间",
       "description": "在家庭下新建一个房间",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "name": { "name": "房间名", "description": "" },
-        "home_id": { "name": "家庭 ID", "description": "留空则取账号首个家庭" },
-        "description": { "name": "描述", "description": "缺省 default room" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "name": {
+          "name": "房间名",
+          "description": ""
+        },
+        "home_id": {
+          "name": "家庭 ID",
+          "description": "留空则取账号首个家庭"
+        },
+        "description": {
+          "name": "描述",
+          "description": "缺省 default room"
+        }
       }
     },
     "update_room": {
       "name": "改房间名",
       "description": "重命名房间",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "room_id": { "name": "房间 ID", "description": "" },
-        "name": { "name": "新房间名", "description": "最长 100 字符" },
-        "home_id": { "name": "家庭 ID", "description": "" },
-        "description": { "name": "描述", "description": "" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "room_id": {
+          "name": "房间 ID",
+          "description": ""
+        },
+        "name": {
+          "name": "新房间名",
+          "description": "最长 100 字符"
+        },
+        "home_id": {
+          "name": "家庭 ID",
+          "description": ""
+        },
+        "description": {
+          "name": "描述",
+          "description": ""
+        }
       }
     },
     "delete_room": {
       "name": "删除房间",
       "description": "删除一个房间（房内有设备时服务端拒绝）",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "room_id": { "name": "房间 ID", "description": "" },
-        "home_id": { "name": "家庭 ID", "description": "" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "room_id": {
+          "name": "房间 ID",
+          "description": ""
+        },
+        "home_id": {
+          "name": "家庭 ID",
+          "description": ""
+        }
       }
     },
     "transfer_devices": {
       "name": "移动设备到房间",
       "description": "把若干设备移动到指定房间",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "device_ids": { "name": "设备 ID 列表", "description": "华为 deviceId 列表" },
-        "room_id": { "name": "目标房间 ID", "description": "" },
-        "home_id": { "name": "家庭 ID", "description": "" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "device_ids": {
+          "name": "设备 ID 列表",
+          "description": "华为 deviceId 列表"
+        },
+        "room_id": {
+          "name": "目标房间 ID",
+          "description": ""
+        },
+        "home_id": {
+          "name": "家庭 ID",
+          "description": ""
+        }
       }
     },
     "rename_device": {
       "name": "设备改名",
       "description": "修改设备别名（别名不含连字符）",
       "fields": {
-        "entry_id": { "name": "配置条目 ID", "description": "" },
-        "dev_id": { "name": "设备 ID", "description": "" },
-        "alias": { "name": "新名称", "description": "留空则清除别名" },
-        "home_id": { "name": "家庭 ID", "description": "可选，作为 X-HomeId 请求头" }
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "dev_id": {
+          "name": "设备 ID",
+          "description": ""
+        },
+        "alias": {
+          "name": "新名称",
+          "description": "留空则清除别名"
+        },
+        "home_id": {
+          "name": "家庭 ID",
+          "description": "可选，作为 X-HomeId 请求头"
+        }
+      }
+    },
+    "set_room_floors": {
+      "name": "设置房间楼层",
+      "description": "批量设置房间楼层（App 抓包验证；服务端为全量覆盖语义，默认自动合并现有楼层）",
+      "fields": {
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "rooms": {
+          "name": "房间楼层列表",
+          "description": "JSON 数组，每项形如 {\"room_id\":\"...\",\"floor\":\"1F\"}；楼层标签如 1F/2F/B1"
+        },
+        "home_id": {
+          "name": "家庭 ID",
+          "description": "留空则取账号首个家庭"
+        },
+        "merge": {
+          "name": "合并现有楼层",
+          "description": "默认开启：先读取家庭现有楼层再合并提交，避免清空其他房间；关闭则原样全量提交"
+        }
+      }
+    },
+    "list_rooms": {
+      "name": "列出房间",
+      "description": "列出家庭下全部房间（含楼层、设备数）",
+      "fields": {
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "home_id": {
+          "name": "家庭 ID",
+          "description": "留空则取账号首个家庭"
+        }
+      }
+    },
+    "delete_device": {
+      "name": "解绑设备",
+      "description": "从家庭解绑（删除）设备，不可恢复；仅网关类设备需要 associate 参数",
+      "fields": {
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "dev_id": {
+          "name": "设备 ID",
+          "description": ""
+        },
+        "home_id": {
+          "name": "家庭 ID",
+          "description": "留空则取账号首个家庭"
+        },
+        "associate": {
+          "name": "网关关联参数",
+          "description": "普通设备留空；仅网关类设备按 App 行为传 1（支持云备份）或 0"
+        }
+      }
+    },
+    "list_devices": {
+      "name": "列出设备",
+      "description": "列出家庭下全部设备（含 devId、型号、所属房间、在线状态）",
+      "fields": {
+        "entry_id": {
+          "name": "配置条目 ID",
+          "description": ""
+        },
+        "home_id": {
+          "name": "家庭 ID",
+          "description": "留空则取账号首个家庭"
+        }
       }
     }
   }
