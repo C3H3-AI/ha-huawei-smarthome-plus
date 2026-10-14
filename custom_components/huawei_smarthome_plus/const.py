@@ -33,6 +33,10 @@ ROOM_UPDATE_PATH = "/userApp/v1.2.0/homes/{home_id}/rooms/{room_id}"  # PUT，bo
 ROOM_DELETE_PATH = "/userApp/v1.2.0/homes/{home_id}/rooms/{room_id}"  # DELETE
 DEVICE_TRANSFER_PATH = "/smart-life/v3/devices/transfer"              # PUT，设备移动到房间/家庭
 DEVICE_ALIAS_PATH = "/smart-life/v3/device/alias/{dev_id}"            # POST，设备改名
+DEVICE_DELETE_PATH = "/smart-life/v2/devices/{dev_id}"                # DELETE，解绑设备（query homeId；网关可加 associate）
+DEVICES_INFO_PATH = "/smart-life/v5/devices/info"                     # GET，设备列表（query homeId）
+ROOM_LIST_PATH = "/smart-life/v2/homes/{home_id}/rooms/"              # GET，房间列表（含 floor）
+ROOM_FLOOR_PATH = "/smart-life/v3/homes/{home_id}/rooms/floor"        # PUT，全量设置楼层 body {"roomFloorInfos":[{floor,roomId}]}
 
 SCENE_TYPE_LABELS: dict[int, str] = {
     0: "混合",

@@ -20,11 +20,15 @@ from typing import Any
 from urllib.parse import quote, urlencode
 
 from .const import (
+    DEVICES_INFO_PATH,
     DEVICE_ALIAS_PATH,
+    DEVICE_DELETE_PATH,
     DEVICE_TRANSFER_PATH,
     HOME_SNAPSHOT_PATH,
     ROOM_CREATE_PATH,
     ROOM_DELETE_PATH,
+    ROOM_FLOOR_PATH,
+    ROOM_LIST_PATH,
     ROOM_UPDATE_PATH,
     SCENE_BASE_URL,
     SCENE_BY_DEVICE_PATH,
@@ -592,6 +596,237 @@ class HuaweiSmartHomePlusApi:
         value = self._json(response)
         return value if isinstance(value, Mapping) else {"raw": value}
 
+    async def async_list_rooms(
+        self,
+        session: Any,
+        *,
+        home_id: str | None = None,
+    ) -> Any:
+        """列出家庭下房间（``GET /smart-life/v2/homes/{homeId}/rooms/``）。
+
+        返回精简列表（room_id/name/floor/device_count 等），兼容服务端
+        列表直接为数组或包在 rooms/roomInfos/roomList/info 键里的情况。
+        """
+
+        hid = home_id or await self._resolve_home_id(session)
+        response = await self._request(
+            session, ROOM_LIST_PATH.format(home_id=quote(hid, safe=""))
+        )
+        data = self._json(response)
+        rooms: Any = None
+        if isinstance(data, Sequence) and not isinstance(data, (str, bytes)):
+            rooms = data
+        elif isinstance(data, Mapping):
+            for key in ("rooms", "roomInfos", "roomList", "info"):
+                candidate = data.get(key)
+                if isinstance(candidate, Sequence) and not isinstance(
+                    candidate, (str, bytes)
+                ):
+                    rooms = candidate
+                    break
+        items: list[dict[str, Any]] = []
+        for room in rooms or []:
+            if not isinstance(room, Mapping):
+                continue
+            dev_ids = room.get("deviceIds")
+            items.append(
+                {
+                    "room_id": str(room.get("roomId") or room.get("id") or ""),
+                    "name": room.get("name") or "",
+                    "floor": room.get("floor") or "",
+                    "description": room.get("description") or "",
+                    "home_id": str(room.get("homeId") or hid),
+                    "device_count": len(dev_ids) if isinstance(dev_ids, Sequence) else 0,
+                }
+            )
+        return {"home_id": hid, "count": len(items), "rooms": items}
+
+    async def async_list_devices(
+        self,
+        session: Any,
+        *,
+        home_id: str | None = None,
+    ) -> Any:
+        """列出家庭下设备（``GET /smart-life/v5/devices/info?homeId=``）。"""
+
+        hid = home_id or await self._resolve_home_id(session)
+        response = await self._request(
+            session, DEVICES_INFO_PATH, params={"homeId": hid}
+        )
+        data = self._json(response)
+        raw_devices: Any = None
+        if isinstance(data, Sequence) and not isinstance(data, (str, bytes)):
+            raw_devices = data
+        elif isinstance(data, Mapping):
+            for key in ("devices", "deviceInfos", "deviceList", "info"):
+                candidate = data.get(key)
+                if isinstance(candidate, Sequence) and not isinstance(
+                    candidate, (str, bytes)
+                ):
+                    raw_devices = candidate
+                    break
+        items: list[dict[str, Any]] = []
+        for item in raw_devices or []:
+            if not isinstance(item, Mapping):
+                continue
+            info = item.get("devInfo") if isinstance(item.get("devInfo"), Mapping) else {}
+            dev_id = item.get("devId") or item.get("id")
+            if not dev_id:
+                continue
+            online = item.get("online")
+            if not isinstance(online, bool):
+                status = item.get("status")
+                online = status == "online" if isinstance(status, str) else False
+            items.append(
+                {
+                    "dev_id": str(dev_id),
+                    "name": item.get("devName")
+                    or item.get("name")
+                    or info.get("deviceName")
+                    or info.get("model")
+                    or "",
+                    "model": info.get("model") or item.get("model") or "",
+                    "manufacturer": info.get("manufacturerName") or "",
+                    "type": info.get("devType") or item.get("nodeType") or "",
+                    "home_id": str(item.get("homeId") or hid),
+                    "room_id": str(item.get("roomId") or ""),
+                    "room_name": item.get("roomName") or "",
+                    "online": bool(online),
+                }
+            )
+        return {"home_id": hid, "count": len(items), "devices": items}
+
+    async def async_delete_device(
+        self,
+        session: Any,
+        dev_id: str,
+        *,
+        home_id: str | None = None,
+        associate: int | None = None,
+    ) -> Any:
+        """解绑设备（``DELETE /smart-life/v2/devices/{devId}?homeId=...``）。
+
+        逆向确认（homebase/c/a.java）：普通设备不带 associate；仅网关类
+        设备 App 会追加 ``&associate=1``（支持云备份）或 ``=0``。
+        """
+
+        if not dev_id:
+            raise ValueError("dev_id is required")
+        hid = home_id or await self._resolve_home_id(session)
+        params: dict[str, str] = {"homeId": hid}
+        if associate is not None:
+            params["associate"] = str(associate)
+        response = await self._request(
+            session,
+            DEVICE_DELETE_PATH.format(dev_id=quote(str(dev_id), safe="")),
+            method="DELETE",
+            params=params,
+        )
+        if not response.body:
+            return {"unbound": dev_id, "home_id": hid}
+        value = self._json(response)
+        return value if isinstance(value, Mapping) else {"raw": value}
+
+    async def async_set_room_floors(
+        self,
+        session: Any,
+        room_floors: Mapping[str, Any] | Sequence[Mapping[str, Any]],
+        *,
+        home_id: str | None = None,
+        merge: bool = True,
+    ) -> Any:
+        """批量设置房间楼层（``PUT /smart-life/v3/homes/{id}/rooms/floor``）。
+
+        App 语义为**全量覆盖**：每次提交家庭下全部房间的楼层（抓包确认
+        body 为 ``{"roomFloorInfos":[{"floor":"1F","roomId":"..."}]}``，
+        响应 ``{"failedList":[]}``）。
+
+        ``merge=True``（默认）时先 GET 房间列表取现有楼层，再用传入项覆盖，
+        避免只改一个房间却把其他房间楼层清空；``merge=False`` 时原样全量提交。
+
+        ``room_floors`` 支持两种形式：
+        - 映射 ``{"<roomId>": "1F"}``
+        - 列表 ``[{"room_id": "<roomId>", "floor": "1F"}]``（roomId 亦可）
+        """
+
+        updates: dict[str, str] = {}
+        if isinstance(room_floors, Mapping):
+            updates = {str(k): str(v) for k, v in room_floors.items()}
+        else:
+            for item in room_floors:
+                rid = item.get("room_id") if isinstance(item, Mapping) else None
+                rid = rid or (item.get("roomId") if isinstance(item, Mapping) else None)
+                if rid is None or "floor" not in item:
+                    raise ValueError("每项需包含 room_id/roomId 与 floor")
+                updates[str(rid)] = str(item["floor"])
+        if not updates:
+            raise ValueError("room_floors 不能为空")
+
+        hid = home_id or await self._resolve_home_id(session)
+        homes_path = quote(hid, safe="")
+
+        if merge:
+            existing = await self._request(
+                session, ROOM_LIST_PATH.format(home_id=homes_path)
+            )
+            data = self._json(existing)
+            rooms: Any = None
+            if isinstance(data, Sequence) and not isinstance(data, (str, bytes)):
+                rooms = data
+            elif isinstance(data, Mapping):
+                for key in ("rooms", "roomInfos", "roomList", "info"):
+                    candidate = data.get(key)
+                    if isinstance(candidate, Sequence) and not isinstance(
+                        candidate, (str, bytes)
+                    ):
+                        rooms = candidate
+                        break
+            if rooms is not None:
+                merged: dict[str, str] = {}
+                for room in rooms:
+                    if not isinstance(room, Mapping):
+                        continue
+                    rid = room.get("roomId") or room.get("id")
+                    floor = room.get("floor")
+                    if rid is not None and floor not in (None, ""):
+                        merged[str(rid)] = str(floor)
+                merged.update(updates)
+                updates = merged
+            else:
+                # merge 模式下拉不到现有房间列表，绝不能降级为只提交传入项
+                # （服务端是全量覆盖，那样会清空其他房间楼层）。
+                raise PlusInvalidResponse(
+                    "无法解析现有房间列表以合并楼层；"
+                    "如确认要全量覆盖请显式传 merge=false"
+                )
+
+        body = json.dumps(
+            {
+                "roomFloorInfos": [
+                    {"floor": floor, "roomId": rid}
+                    for rid, floor in updates.items()
+                ]
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        response = await self._request(
+            session,
+            ROOM_FLOOR_PATH.format(home_id=homes_path),
+            method="PUT",
+            body=body,
+            extra_headers={"Content-Type": "application/json;charset=UTF-8"},
+        )
+        value = self._json(response)
+        failed = value.get("failedList") if isinstance(value, Mapping) else None
+        if failed:
+            raise PlusApiError(f"房间楼层设置失败：{failed}")
+        return {
+            "submitted": len(updates),
+            "merged": merge,
+            "raw": value if isinstance(value, Mapping) else value,
+        }
+
     # ------------------------------------------------------------------
     # 传输层
     # ------------------------------------------------------------------
@@ -672,7 +907,12 @@ class HuaweiSmartHomePlusApi:
         if response.status == 429:
             raise PlusApiError("SmartHome service rate limited the request")
         if response.status >= 400:
-            raise PlusApiError(f"SmartHome HTTP status {response.status}")
+            detail = ""
+            if response.body:
+                detail = ": " + response.body.decode(
+                    "utf-8", errors="replace"
+                )[:300]
+            raise PlusApiError(f"SmartHome HTTP status {response.status}{detail}")
         return response
 
     @staticmethod

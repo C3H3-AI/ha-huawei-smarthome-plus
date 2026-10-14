@@ -310,6 +310,34 @@ delete_room:
       required: false
       selector: {text: {}}
 
+list_rooms:
+  name: 列出房间
+  description: 列出家庭下全部房间（含楼层、设备数）
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    home_id:
+      name: 家庭 ID
+      required: false
+      description: 留空则取账号首个家庭
+      selector: {text: {}}
+
+list_devices:
+  name: 列出设备
+  description: 列出家庭下全部设备（含 devId、型号、所属房间、在线状态）
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    home_id:
+      name: 家庭 ID
+      required: false
+      description: 留空则取账号首个家庭
+      selector: {text: {}}
+
 transfer_devices:
   name: 移动设备到房间
   description: 把若干设备移动到指定房间
@@ -334,7 +362,7 @@ transfer_devices:
 
 rename_device:
   name: 设备改名
-  description: 修改设备别名（别名不含连字符）
+  description: 修改设备别名（App 抓包验证）
   fields:
     entry_id:
       name: 配置条目 ID
@@ -354,3 +382,54 @@ rename_device:
       required: false
       description: 可选，作为 X-HomeId 请求头
       selector: {text: {}}
+
+delete_device:
+  name: 解绑设备
+  description: 从家庭解绑（删除）设备，不可恢复；仅网关类设备需要 associate 参数
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    dev_id:
+      name: 设备 ID
+      required: true
+      selector: {text: {}}
+    home_id:
+      name: 家庭 ID
+      required: false
+      description: 留空则取账号首个家庭
+      selector: {text: {}}
+    associate:
+      name: 网关关联参数
+      required: false
+      description: 普通设备留空；仅网关类设备按 App 行为传 1（支持云备份）或 0
+      selector:
+        select:
+          options:
+            - {label: "1（支持云备份的网关）", value: "1"}
+            - {label: "0（其他网关）", value: "0"}
+
+set_room_floors:
+  name: 设置房间楼层
+  description: 批量设置房间楼层（App 抓包验证；服务端为全量覆盖语义，默认自动合并现有楼层）
+  fields:
+    entry_id:
+      name: 配置条目 ID
+      required: false
+      selector: {text: {}}
+    rooms:
+      name: 房间楼层列表
+      required: true
+      description: 'JSON 数组，每项形如 {"room_id":"1680711458228","floor":"1F"}；楼层标签如 1F/2F/B1'
+      selector: {object: {}}
+    home_id:
+      name: 家庭 ID
+      required: false
+      description: 留空则取账号首个家庭
+      selector: {text: {}}
+    merge:
+      name: 合并现有楼层
+      required: false
+      description: 默认开启：先读取家庭现有楼层再合并提交，避免清空其他房间；关闭则原样全量提交
+      selector: {boolean: {}}
