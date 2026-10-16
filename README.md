@@ -49,6 +49,21 @@
 | `delete_device` | 从家庭解绑设备（`DELETE /smart-life/v2/devices/{devId}?homeId=`，网关可设 `associate`，不可恢复） | 实测 |
 | `set_room_floors` | 批量设置房间楼层；服务端为全量覆盖语义，默认先拉取现有楼层再合并提交，只传要改的房间也不会清空其他房间 | 实测 |
 
+## AI 助手技能：场景设置
+
+仓库自带 `skills/huawei-scene-setup/` 技能，把上面的 11 个场景服务封装成
+「用自然语言创建/修改智慧生活场景」的可复用工作流，包含：
+
+- 场景创建标准流程（先借已有场景 flow 作模板，避免盲拼云端 DSL）
+- 场景管理 CLI（`scripts/huawei_scene.py`，仅依赖 requests）：列场景/详情、
+  查设备房间、增删改、执行、启停、改名、移动、日志，写操作带二次确认
+- 反编译 + 真机验证的场景 ECA 类型参考（触发事件/条件/动作）与 JSON 模板
+  （`references/scene-flow.md`）
+
+安装：把 `skills/huawei-scene-setup/` 整个目录复制到 AI 助手的 skills 目录
+（如 Trae CN 版 `~/.trae-cn/skills/`），HA 地址与长期访问令牌通过参数或
+环境变量提供，详见技能内 [SKILL.md](skills/huawei-scene-setup/SKILL.md)。
+
 ## License
 
 MIT
