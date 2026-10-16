@@ -604,8 +604,10 @@ class HuaweiSmartHomePlusApi:
     ) -> Any:
         """列出家庭下房间（``GET /smart-life/v2/homes/{homeId}/rooms/``）。
 
-        返回精简列表（room_id/name/floor/device_count 等），兼容服务端
-        列表直接为数组或包在 rooms/roomInfos/roomList/info 键里的情况。
+        响应为裸 JSON 数组（服务端也可能包在 rooms/roomInfos/roomList/info
+        键里）。单项即 App 的 RoomCloudEntity：房间名主字段为 ``value``
+        （``name``/``zhValue`` 兜底）；载荷本身不含设备数，
+        ``device_count`` 由设备列表按 roomId 分组得到，取不到时为 None。
         """
 
         hid = home_id or await self._resolve_home_id(session)
@@ -625,18 +627,31 @@ class HuaweiSmartHomePlusApi:
                     rooms = candidate
                     break
         items: list[dict[str, Any]] = []
+        # v2/rooms 响应项（RoomCloudEntity）不带设备数，设备侧 roomId 分组计数
+        device_counts: dict[str, int] = {}
+        try:
+            dev_result = await self.async_list_devices(session, home_id=hid)
+            for dev in dev_result.get("devices", []):
+                rid = str(dev.get("room_id") or "")
+                device_counts[rid] = device_counts.get(rid, 0) + 1
+        except Exception:  # noqa: BLE001 - 计数是附加信息，不影响房间列表
+            device_counts = {}
         for room in rooms or []:
             if not isinstance(room, Mapping):
                 continue
-            dev_ids = room.get("deviceIds")
+            rid = str(room.get("roomId") or room.get("id") or "")
             items.append(
                 {
-                    "room_id": str(room.get("roomId") or room.get("id") or ""),
-                    "name": room.get("name") or "",
+                    "room_id": rid,
+                    # 房间名主字段是 value，name/zhValue 兜底（RoomCloudEntity）
+                    "name": room.get("value")
+                    or room.get("name")
+                    or room.get("zhValue")
+                    or "",
                     "floor": room.get("floor") or "",
                     "description": room.get("description") or "",
                     "home_id": str(room.get("homeId") or hid),
-                    "device_count": len(dev_ids) if isinstance(dev_ids, Sequence) else 0,
+                    "device_count": device_counts.get(rid) if device_counts else None,
                 }
             )
         return {"home_id": hid, "count": len(items), "rooms": items}
